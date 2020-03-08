@@ -103,6 +103,44 @@ def deposit():
                     }
                     return make_response(jsonify(response_obj)), 400
 
+@flaskapp.route('/withdraw', methods=['POST'])
+def withdraw():
+    if request.method == 'POST':
+        content_type = request.headers.get('Content-type')
+        if content_type == "application/json":
+            if request.is_json:
+                recvd_json = request.get_json()
+                recvd_username = recvd_json['username']
+                amount = recvd_json['amount']
+                if users.user_status[recvd_username] is True:
+                    if recvd_username in users.user_account:
+                        balance = users.user_account[recvd_username] - amount
+                        if balance < 0:
+                            response_obj = {
+                                'status' : 'Fail',
+                                'message' : 'Insufficient Balance!'
+                            }
+                            return make_response(jsonify(response_obj)), 200
+                        users.user_account[recvd_username] = balance
+                        response_obj = {
+                            'status' : 'Success',
+                            'message' : 'Amount Withdrawn!'
+                        }
+                        return make_response(jsonify(response_obj)), 200
+                    else:
+                        users.user_account[recvd_username] = amount
+                    response_obj = {
+                        'status' : 'Success',
+                        'message' : 'Amount Deposited!'
+                    }
+                    return make_response(jsonify(response_obj)), 200
+                else:
+                    response_obj = {
+                            'status' : 'Fail',
+                            'message' : 'Please Login!'
+                    }
+                    return make_response(jsonify(response_obj)), 400
+
 @flaskapp.route('/balance', methods=['GET'])
 def balance():
     if request.method == 'GET':
